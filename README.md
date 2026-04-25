@@ -103,6 +103,13 @@ All shortcuts use **Option (⌥)** as the modifier.
 
 New windows default to **floating** (set in `aerospace.toml` via `[[on-window-detected]] run = ['layout floating']`). Toggle a window into a tiled layout with `⌥ + /`.
 
+## Window snapping with Magnet (or Rectangle)
+
+For Magnet-style snap shortcuts (`Ctrl+⌥+←` for left-half etc.), the window **must be floating**, not tiled. AeroSpace will fight Magnet otherwise — you'll resize, then the window snaps back to its tile.
+
+- New windows default to floating (`[[on-window-detected]] run = ['layout floating']`)
+- For windows that were already open before this rule was added, toggle them with `⌥ + /` once
+
 ## Notes / gotchas
 
 - **SketchyBar helpers are pre-compiled out of the repo.** `install.sh` rebuilds them — depends on `make` and `clang` from Xcode CLI tools.
