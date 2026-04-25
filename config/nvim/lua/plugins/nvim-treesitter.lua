@@ -8,7 +8,7 @@ return {
   opts = function()
     return {
       priority = 500,
-      ensure_installed = { "cpp", "c", "lua", "vim", "vimdoc", "query", "python", "markdown", "markdown_inline", "html", "latex", "sql", "gsheets" },
+      ensure_installed = { "cpp", "c", "lua", "vim", "vimdoc", "query", "python", "markdown", "markdown_inline", "html", "sql", "gsheets" },
 
       highlight = { enable = true },
 

@@ -6,7 +6,22 @@ return {
   lazy = false,
   opts = {
     bigfile = { enabled = true },
-    dashboard = { enabled = true },
+    dashboard = {
+      enabled = true,
+      preset = {
+        header = [[
+       ／＞　 　フ                                                    フ　 ＜＼
+      | 　_　 _ l                                                    l _　_ 　|
+    ／` ミ＿xノ              ⊙ ─ ⊙ ─ ⊙ ─ ⊙ ─ ⊙ ─ ⊙              ヽ x＿彡 `＼
+   /　　　 　 |                                                          |　　　　 ＼
+  /　 ヽ　　 ﾉ                                                          ヽ　　 ノ　 ＼
+ │　　|　|　|                                                            |　|　 |　│
+／￣|　　 |　|　|                                                          |　|　 |　 |￣＼
+(￣ヽ＿_ヽ_)__)                                                            (__(_ヽ_＿ノ￣)
+＼二)                                                                              (二／
+]],
+      },
+    },
     explorer = { enabled = true },
     indent = { enabled = true },
     input = { enabled = true },

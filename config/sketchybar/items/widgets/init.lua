@@ -1,7 +1,6 @@
 require("items.widgets.battery")
 require("items.widgets.volume")
 require("items.widgets.wifi")
-require("items.widgets.cpu")
-require("items.widgets.ram")
+require("items.widgets.cpu_ram")
 -- require("items.widgets.git_toolkit")
 -- require("items.widgets.music")
