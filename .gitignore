@@ -1,0 +1,18 @@
+# Compiled sketchybar binaries (rebuilt by install.sh)
+config/sketchybar/helpers/**/bin/
+config/sketchybar/helpers/**/*.o
+
+# Lazy.nvim plugin lockfile state
+config/nvim/lazy-lock.json.local
+
+# OS junk
+.DS_Store
+*.swp
+*~
+
+# Per-machine secrets — never commit these
+config/gh/
+config/github-copilot/
+config/gcloud/
+*.local
+secrets/
