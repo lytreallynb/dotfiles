@@ -33,8 +33,8 @@ log("Script exists: " .. tostring(file_exists(SCAN_SCRIPT)))
 -- CHIP (main widget)
 local chip = sbar.add("item", TOOL_PREFIX .. ".chip", {
 	position = "right",
-	icon = { string = "󰊤 ", font = { size = 14 } },
-	label = { string = "Git", font = { style = settings.font.style_map["Bold"], size = 12 } },
+	icon = { string = "󰊤 ", color = colors.accent_secondary, font = { size = 14 } },
+	label = { string = "Git", color = colors.white, font = { style = settings.font.style_map["Bold"], size = 12 } },
 	padding_left = 6,
 	padding_right = 6,
 	update_freq = 180,
@@ -42,7 +42,13 @@ local chip = sbar.add("item", TOOL_PREFIX .. ".chip", {
 
 -- BRACKET with popup - Fix: Set popup properties directly on bracket creation
 local bracket = sbar.add("bracket", TOOL_PREFIX .. ".bracket", { chip.name }, {
-	background = { color = colors.bg1 },
+	background = {
+		color = colors.bg1,
+		height = settings.chip_height,
+		corner_radius = settings.chip_corner_radius,
+		border_width = settings.chip_border_width,
+		border_color = colors.border,
+	},
 	popup = {
 		align = "center",
 		drawing = "off", -- Explicitly set initial state
@@ -150,7 +156,7 @@ local function add_repo_row(key, rec)
 		width = 460,
 		padding_left = 6,
 		padding_right = 6,
-		background = { color = colors.bg1 },
+		background = { color = colors.bg1, corner_radius = 8 },
 	})
 	track(row_name)
 

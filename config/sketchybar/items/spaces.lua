@@ -12,17 +12,19 @@ for i = 1, 9, 1 do
 		icon = {
 			font = { family = settings.font.numbers },
 			string = i,
-			padding_left = 10,
-			padding_right = 10,
-			color = colors.white,
+			padding_left = 9,
+			padding_right = 9,
+			color = colors.muted,
 		},
 		label = { drawing = false },
 		padding_right = 1,
 		padding_left = 1,
 		background = {
 			color = colors.bg1,
-			height = 24,
-			border_color = { alpha = 0 },
+			height = settings.chip_height,
+			corner_radius = settings.chip_corner_radius,
+			border_width = settings.chip_border_width,
+			border_color = colors.border,
 		},
 	})
 
@@ -37,7 +39,7 @@ end
 sbar.add("bracket", { "/space\\..*/" }, {
 	background = {
 		color = colors.transparent,
-		height = 22,
+		height = settings.chip_height,
 		border_color = { alpha = 0 },
 	},
 })
@@ -64,8 +66,11 @@ local function update_spaces()
 				local selected = (tostring(i) == focused)
 				spaces[i]:set({
 					drawing = visible[i] == true,
-					icon = { color = selected and colors.black or colors.white },
-					background = { color = selected and colors.white or colors.bg1 },
+					icon = { color = selected and colors.black or colors.muted },
+					background = {
+						color = selected and colors.accent or colors.bg1,
+						border_color = selected and colors.border_active or colors.border,
+					},
 				})
 			end
 		end)
@@ -93,7 +98,7 @@ local spaces_indicator = sbar.add("item", {
 	icon = {
 		padding_left = 8,
 		padding_right = 9,
-		color = colors.white,
+		color = colors.accent,
 		string = icons.switch.on,
 	},
 	label = {
@@ -101,10 +106,13 @@ local spaces_indicator = sbar.add("item", {
 		padding_left = 0,
 		padding_right = 8,
 		string = "Spaces",
-		color = colors.white,
+		color = colors.muted,
 	},
 	background = {
 		color = colors.with_alpha(colors.bg1, 0.0),
+		height = settings.chip_height,
+		corner_radius = settings.chip_corner_radius,
+		border_width = settings.chip_border_width,
 		border_color = { alpha = 0 },
 	},
 })
@@ -120,7 +128,8 @@ spaces_indicator:subscribe("mouse.entered", function()
 	sbar.animate("tanh", 30, function()
 		spaces_indicator:set({
 			background = {
-				color = { alpha = 0.67 },
+				color = colors.bg2,
+				border_color = colors.border,
 			},
 			label = { width = "dynamic" },
 		})
@@ -131,7 +140,8 @@ spaces_indicator:subscribe("mouse.exited", function()
 	sbar.animate("tanh", 30, function()
 		spaces_indicator:set({
 			background = {
-				color = { alpha = 0.0 },
+				color = colors.with_alpha(colors.bg1, 0.0),
+				border_color = { alpha = 0 },
 			},
 			label = { width = 0 },
 		})

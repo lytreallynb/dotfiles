@@ -9,7 +9,7 @@ local wifi = sbar.add("item", "widgets.wifi", {
 	position = "right",
 	icon = {
 		string = icons.wifi.connected,
-		color = colors.white,
+		color = colors.accent_secondary,
 	},
 	label = { drawing = false },
 })
@@ -17,7 +17,10 @@ local wifi = sbar.add("item", "widgets.wifi", {
 local wifi_bracket = sbar.add("bracket", "widgets.wifi.bracket", { wifi.name }, {
 	background = {
 		color = colors.bg1,
-		height = 24,
+		height = settings.chip_height,
+		corner_radius = settings.chip_corner_radius,
+		border_width = settings.chip_border_width,
+		border_color = colors.border,
 	},
 	popup = { align = "center", height = 24, drawing = false },
 })
@@ -29,11 +32,11 @@ sbar.add("item", "widgets.wifi.padding", {
 
 local ssid = sbar.add("item", {
 	position = "popup." .. wifi_bracket.name,
-	icon = { font = { style = settings.font.style_map["Bold"] }, string = icons.wifi.router },
+	icon = { color = colors.accent_secondary, font = { style = settings.font.style_map["Bold"] }, string = icons.wifi.router },
 	width = popup_width,
 	align = "center",
 	label = { font = { size = 15, style = settings.font.style_map["Bold"] }, max_chars = 18, string = "????????????" },
-	background = { height = 2, color = colors.grey, y_offset = -15 },
+	background = { height = 1, color = colors.border, y_offset = -15 },
 })
 
 local hostname = sbar.add("item", {
@@ -71,7 +74,7 @@ wifi:subscribe({ "wifi_change", "system_woke" }, function()
 		wifi:set({
 			icon = {
 				string = connected and icons.wifi.connected or icons.wifi.disconnected,
-				color = connected and colors.white or colors.red,
+				color = connected and colors.accent_secondary or colors.red,
 			},
 		})
 	end)

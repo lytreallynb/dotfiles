@@ -94,7 +94,15 @@ sbar.add(
 	"bracket",
 	"widgets.music.bracket",
 	{ btn_prev.name, btn_pp.name, btn_next.name, artist.name, title.name, cover.name },
-	{ background = { color = colors.bg1, border_color = colors.black, border_width = 1, height = 26 } }
+	{
+		background = {
+			color = colors.bg1,
+			border_color = colors.border,
+			border_width = settings.chip_border_width,
+			corner_radius = settings.chip_corner_radius,
+			height = settings.chip_height,
+		},
+	}
 )
 
 sbar.add("item", "widgets.music.padding", {

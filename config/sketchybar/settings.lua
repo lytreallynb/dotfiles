@@ -1,6 +1,10 @@
 return {
-  paddings = 5,
-  group_paddings = 10,
+  paddings = 6,
+  group_paddings = 8,
+  chip_height = 26,
+  chip_corner_radius = 10,
+  chip_border_width = 1,
+  popup_corner_radius = 12,
 
   icons = "sf-symbols", -- alternatively available: NerdFont
 

@@ -22,11 +22,13 @@ for i = 1, max_items, 1 do
 		icon = {
 			drawing = (i == 1),
 			font = "sketchybar-app-font:Regular:16.0",
+			color = colors.accent_secondary,
 		},
 		label = {
 			font = {
 				style = settings.font.style_map[i == 1 and "Heavy" or "Semibold"],
 			},
+			color = i == 1 and colors.white or colors.muted,
 			padding_left = 6,
 			padding_right = 6,
 		},
@@ -37,7 +39,13 @@ for i = 1, max_items, 1 do
 end
 
 sbar.add("bracket", { "/menu\\..*/" }, {
-	background = { color = colors.bg1 },
+	background = {
+		color = colors.bg1,
+		height = settings.chip_height,
+		corner_radius = settings.chip_corner_radius,
+		border_width = settings.chip_border_width,
+		border_color = colors.border,
+	},
 })
 
 local menu_padding = sbar.add("item", "menu.padding", {
@@ -55,9 +63,13 @@ local function update_menus()
 				if id == 1 then
 					local lookup = app_icons[menu]
 					local icon = ((lookup == nil) and app_icons["Default"] or lookup)
-					menu_items[id]:set({ icon = { string = icon, drawing = true }, label = menu, drawing = true })
+					menu_items[id]:set({
+						icon = { string = icon, drawing = true, color = colors.accent_secondary },
+						label = { string = menu, color = colors.white },
+						drawing = true,
+					})
 				else
-					menu_items[id]:set({ label = menu, drawing = true })
+					menu_items[id]:set({ label = { string = menu, color = colors.muted }, drawing = true })
 				end
 			else
 				break

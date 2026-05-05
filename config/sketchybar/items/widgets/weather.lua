@@ -5,8 +5,8 @@ local settings = require("settings")
 -- === Compact chip (icon + temp) ===
 local weather = sbar.add("item", "widgets.weather", {
 	position = "right",
-	icon = { string = "􀇃" }, -- default cloud.sun
-	label = { string = "…°", font = { style = settings.font.style_map["Bold"], size = 12 } },
+	icon = { string = "􀇃", color = colors.accent_secondary }, -- default cloud.sun
+	label = { string = "…°", color = colors.white, font = { style = settings.font.style_map["Bold"], size = 12 } },
 	padding_left = 6,
 	padding_right = 6,
 	update_freq = 600, -- 10 min
@@ -14,7 +14,13 @@ local weather = sbar.add("item", "widgets.weather", {
 
 -- === Popup bracket container ===
 local weather_bracket = sbar.add("bracket", "widgets.weather.bracket", { weather.name }, {
-	background = { color = colors.bg1 },
+	background = {
+		color = colors.bg1,
+		height = settings.chip_height,
+		corner_radius = settings.chip_corner_radius,
+		border_width = settings.chip_border_width,
+		border_color = colors.border,
+	},
 	popup = { align = "center" },
 })
 
@@ -54,7 +60,7 @@ local wind = add_row("widgets.weather.row.wind", "Wind", "—")
 -- Simple separator line
 sbar.add("item", "widgets.weather.row.sep", {
 	position = "popup." .. weather_bracket.name,
-	background = { height = 1, color = colors.bg2 },
+	background = { height = 1, color = colors.border },
 	width = 250,
 })
 

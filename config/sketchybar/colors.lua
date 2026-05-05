@@ -1,30 +1,37 @@
 return {
-	-- Core
-	black = 0xff1a1b26, -- TN night bg
-	white = 0xffc0caf5, -- TN white (ui/variables)
-	red = 0xfff7768e,
-	green = 0xff9ece6a,
-	blue = 0xff7aa2f7,
-	yellow = 0xffe0af68,
-	orange = 0xffff9e64,
-	magenta = 0xffbb9af7,
-	grey = 0xff565f89, -- comments/disabled
+	-- Core palette: warm midnight glass with a restrained amber accent.
+	black = 0xff11131a,
+	white = 0xfff5f0e8,
+	red = 0xffff6b7a,
+	green = 0xff9adf8f,
+	blue = 0xff8aadf4,
+	cyan = 0xff7dcfff,
+	yellow = 0xfff3c677,
+	orange = 0xffffa066,
+	magenta = 0xffcba6f7,
+	grey = 0xff7c879d,
+	muted = 0xffa4adbd,
 	transparent = 0x00000000,
+	accent = 0xfff3c677,
+	accent_secondary = 0xff8aadf4,
 
 	-- Bar / popups / backgrounds
 	bar = {
-		-- 20% opacity over TN background (nice subtle glass)
-		bg = 0x001a1b26, -- α=0x33 ≈ 20%
-		border = 0xff292e42, -- highlight line
+		bg = 0x0011131a,
+		border = 0x33f5f0e8,
 	},
 	popup = {
-		bg = 0xc01f2335, -- ~75% over deeper bg
-		border = 0xff565f89, -- soft grey border
+		bg = 0xe011131a,
+		border = 0x66f5f0e8,
 	},
 
-	-- Extra background shades (useful for chips/brackets)
-	bg1 = 0xaa1f2335, -- darker panel
-	bg2 = 0xaa24283b, -- card/chip bg
+	-- Shared surfaces for chips/brackets.
+	bg1 = 0x66181b24,
+	bg2 = 0x88222631,
+	bg3 = 0xaa2a2f3a,
+	border = 0x33f5f0e8,
+	border_active = 0xfff3c677,
+	shadow = 0x66000000,
 
 	-- Alpha helper unchanged
 	with_alpha = function(color, alpha)

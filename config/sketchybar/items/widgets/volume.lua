@@ -9,6 +9,7 @@ local volume_percent = sbar.add("item", "widgets.volume1", {
 	icon = { drawing = false },
 	label = {
 		string = "??%",
+		color = colors.white,
 		padding_left = -1,
 		font = { family = settings.font.numbers },
 	},
@@ -21,7 +22,7 @@ local volume_icon = sbar.add("item", "widgets.volume2", {
 		string = icons.volume._100,
 		width = 0,
 		align = "left",
-		color = colors.grey,
+		color = colors.accent_secondary,
 		font = {
 			style = settings.font.style_map["Regular"],
 			size = 14.0,
@@ -43,7 +44,10 @@ local volume_bracket = sbar.add("bracket", "widgets.volume.bracket", {
 }, {
 	background = {
 		color = colors.bg1,
-		height = 24,
+		height = settings.chip_height,
+		corner_radius = settings.chip_corner_radius,
+		border_width = settings.chip_border_width,
+		border_color = colors.border,
 	},
 	popup = { align = "center" },
 })
@@ -56,11 +60,11 @@ sbar.add("item", "widgets.volume.padding", {
 local volume_slider = sbar.add("slider", popup_width, {
 	position = "popup." .. volume_bracket.name,
 	slider = {
-		highlight_color = colors.blue,
+		highlight_color = colors.accent_secondary,
 		background = {
 			height = 6,
 			corner_radius = 3,
-			color = colors.bg2,
+			color = colors.bg3,
 		},
 		knob = {
 			string = "􀀁",
@@ -123,7 +127,7 @@ local function volume_toggle_details(env)
 				for device in string.gmatch(available, "[^\r\n]+") do
 					local color = colors.grey
 					if current == device then
-						color = colors.white
+						color = colors.accent
 					end
 					sbar.add("item", "volume.device." .. counter, {
 						position = "popup." .. volume_bracket.name,
@@ -135,7 +139,7 @@ local function volume_toggle_details(env)
 							.. '" && sketchybar --set /volume.device\\.*/ label.color='
 							.. colors.grey
 							.. " --set $NAME label.color="
-							.. colors.white,
+							.. colors.accent,
 					})
 					counter = counter + 1
 				end

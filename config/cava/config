@@ -1,0 +1,39 @@
+## ╔══════════════════════════════════════════════════════════════════════╗
+## ║                    CYBER / PIXEL AESTHETIC CAVA                      ║
+## ╚══════════════════════════════════════════════════════════════════════╝
+
+[general]
+framerate = 60
+autosens = 1
+sensitivity = 100
+bars = 0
+bar_width = 2
+bar_spacing = 1
+
+[input]
+# macOS: Use portaudio with BlackHole or similar loopback device
+# Install: brew install blackhole-2ch
+# Then set BlackHole as audio source in System Settings
+method = portaudio
+source = auto
+
+[output]
+method = noncurses
+channels = stereo
+
+[color]
+# Transparent background (shows terminal bg through)
+background = default
+
+# Gruvbox-inspired cyber gradient
+gradient = 1
+gradient_count = 6
+gradient_color_1 = '#689d6a'
+gradient_color_2 = '#8ec07c'
+gradient_color_3 = '#fabd2f'
+gradient_color_4 = '#fe8019'
+gradient_color_5 = '#fb4934'
+gradient_color_6 = '#d3869b'
+
+[smoothing]
+noise_reduction = 66

@@ -6,8 +6,9 @@ sbar.add("item", { position = "right", width = settings.group_paddings })
 
 local cal = sbar.add("item", {
 	icon = {
-		color = colors.white,
-		padding_left = 8,
+		color = colors.accent,
+		padding_left = 9,
+		padding_right = 5,
 		font = {
 			style = settings.font.style_map["Black"],
 			size = 12.0,
@@ -15,8 +16,8 @@ local cal = sbar.add("item", {
 	},
 	label = {
 		color = colors.white,
-		padding_right = 8,
-		width = 70,
+		padding_right = 9,
+		width = 68,
 		align = "right",
 		font = { family = settings.font.numbers },
 	},
@@ -26,8 +27,10 @@ local cal = sbar.add("item", {
 	padding_right = 1,
 	background = {
 		color = colors.bg2,
-		border_color = { alpha = 0 },
-		border_width = 1,
+		height = settings.chip_height,
+		corner_radius = settings.chip_corner_radius,
+		border_color = colors.border,
+		border_width = settings.chip_border_width,
 	},
 	click_script = "open -a 'Calendar'",
 })
@@ -36,7 +39,7 @@ local cal = sbar.add("item", {
 sbar.add("bracket", { cal.name }, {
 	background = {
 		color = colors.transparent,
-		height = 24,
+		height = settings.chip_height,
 	},
 })
 

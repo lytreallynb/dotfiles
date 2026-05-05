@@ -9,7 +9,7 @@ DOTFILES="$(cd "$(dirname "$0")" && pwd)"
 echo "==> Syncing live configs into $DOTFILES"
 
 # ~/.config/X -> dotfiles/config/X
-for name in aerospace borders ghostty kitty nvim sketchybar; do
+for name in aerospace borders cava fastfetch ghostty kitty nvim sketchybar; do
   if [ -d "$HOME/.config/$name" ]; then
     rsync -a --delete \
       --exclude '.DS_Store' \
