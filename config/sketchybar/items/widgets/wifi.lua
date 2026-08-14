@@ -4,14 +4,36 @@ local settings = require("settings")
 
 local iface = "en0"
 local popup_width = 250
+local connected = false
+local rate_label = "idle"
+local down_rate = "---"
+local up_rate = "---"
+local down_value = 0
+local up_value = 0
+
+sbar.add("event", "network_update")
 
 local wifi = sbar.add("item", "widgets.wifi", {
 	position = "right",
+	update_freq = 10,
 	icon = {
 		string = icons.wifi.connected,
 		color = colors.accent_secondary,
 	},
-	label = { drawing = false },
+	label = {
+		drawing = true,
+		font = {
+			family = settings.font.numbers,
+			style = settings.font.style_map["Bold"],
+			size = 9.5,
+		},
+		string = rate_label,
+		width = 44,
+		align = "center",
+		color = colors.muted,
+		padding_left = 2,
+		padding_right = 6,
+	},
 })
 
 local wifi_bracket = sbar.add("bracket", "widgets.wifi.bracket", { wifi.name }, {
@@ -37,6 +59,18 @@ local ssid = sbar.add("item", {
 	align = "center",
 	label = { font = { size = 15, style = settings.font.style_map["Bold"] }, max_chars = 18, string = "????????????" },
 	background = { height = 1, color = colors.border, y_offset = -15 },
+})
+
+local download = sbar.add("item", {
+	position = "popup." .. wifi_bracket.name,
+	icon = { align = "left", string = "Download:", width = popup_width / 2 },
+	label = { string = "---", width = popup_width / 2, align = "right", color = colors.accent_secondary },
+})
+
+local upload = sbar.add("item", {
+	position = "popup." .. wifi_bracket.name,
+	icon = { align = "left", string = "Upload:", width = popup_width / 2 },
+	label = { string = "---", width = popup_width / 2, align = "right", color = colors.muted },
 })
 
 local hostname = sbar.add("item", {
@@ -68,16 +102,64 @@ local function trim(s)
 	return s:match("^%s*(.-)%s*$") or s
 end
 
-wifi:subscribe({ "wifi_change", "system_woke" }, function()
+local function compact_rate(value)
+	local amount, unit = trim(value):match("0*(%d+)%s*(%a+)")
+	if not amount then return "---", 0, "---" end
+	local suffix = unit == "MBps" and "M" or unit == "KBps" and "K" or "B"
+	local multiplier = unit == "MBps" and 1000000 or unit == "KBps" and 1000 or 1
+	local numeric = tonumber(amount) or 0
+	local detailed_suffix = unit == "MBps" and "MB/s" or unit == "KBps" and "KB/s" or "B/s"
+	return tostring(numeric) .. suffix, numeric * multiplier, tostring(numeric) .. " " .. detailed_suffix
+end
+
+local function render_rate()
+	if not connected then
+		rate_label = "offline"
+	elseif down_value == 0 and up_value == 0 then
+		rate_label = "idle"
+	elseif down_value >= up_value then
+		rate_label = "↓" .. down_rate
+	else
+		rate_label = "↑" .. up_rate
+	end
+
+	wifi:set({
+		label = {
+			string = rate_label,
+			color = connected and colors.muted or colors.red,
+		},
+	})
+end
+
+local function refresh_connection()
 	sbar.exec("ipconfig getifaddr " .. iface, function(result)
-		local connected = trim(result) ~= ""
+		connected = trim(result) ~= ""
 		wifi:set({
 			icon = {
 				string = connected and icons.wifi.connected or icons.wifi.disconnected,
 				color = connected and colors.accent_secondary or colors.red,
 			},
 		})
+		render_rate()
 	end)
+end
+
+local function start_network_monitor()
+	sbar.exec("pkill -x network_load >/dev/null 2>&1; $CONFIG_DIR/helpers/event_providers/network_load/bin/network_load "
+		.. iface .. " network_update 2.0")
+end
+
+wifi:subscribe({ "forced", "routine", "wifi_change", "system_woke" }, refresh_connection)
+
+wifi:subscribe("network_update", function(env)
+	if not connected then return end
+	local down_detail
+	local up_detail
+	down_rate, down_value, down_detail = compact_rate(env.download)
+	up_rate, up_value, up_detail = compact_rate(env.upload)
+	download:set({ label = { string = down_detail } })
+	upload:set({ label = { string = up_detail } })
+	render_rate()
 end)
 
 local function hide_details()
@@ -122,3 +204,11 @@ hostname:subscribe("mouse.clicked", copy_label_to_clipboard)
 ip:subscribe("mouse.clicked", copy_label_to_clipboard)
 mask:subscribe("mouse.clicked", copy_label_to_clipboard)
 router:subscribe("mouse.clicked", copy_label_to_clipboard)
+
+-- Resolve the Wi-Fi hardware interface instead of assuming it is always en0.
+sbar.exec("networksetup -listallhardwareports | awk '/Hardware Port: Wi-Fi/ {getline; print $2; exit}'", function(result)
+	local detected = trim(result)
+	if detected ~= "" then iface = detected end
+	refresh_connection()
+	start_network_monitor()
+end)
