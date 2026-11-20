@@ -129,13 +129,13 @@ final class Pet: NSObject {
             wakeUp(line: "嗯...醒了")
         case .special:
             // Busy with its special move: talk, but stay put.
-            say(spec.clickLines.randomElement() ?? "...")
+            say(LineStore.lines(for: spec).randomElement() ?? "...")
         default:
             if spec.specialChance > 0 && Double.random(in: 0..<1) < 0.3 {
                 startSpecial(announce: true)
             } else {
                 jump()
-                say(spec.clickLines.randomElement() ?? "...")
+                say(LineStore.lines(for: spec).randomElement() ?? "...")
             }
         }
     }
@@ -458,18 +458,26 @@ final class PetView: NSView {
         path.stroke()
     }
 
+    // Drawn as pixels instead of text: font fallback for this text crashed on some macOS builds.
     func drawSnores() {
         let phase = (pet.tick / 20) % 3
-        let font = NSFont.monospacedSystemFont(ofSize: 12, weight: .bold)
-        let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: outlineColor.withAlphaComponent(0.7)]
         let headOnRight = !spec.mirrorsToFace || pet.facingRight
-        let baseX = headOnRight ? spriteOrigin.x + spec.spriteWidth - 4 : spriteOrigin.x - 18
-        let base = NSPoint(x: baseX, y: spriteOrigin.y + spec.spriteHeight - 14)
         let direction: CGFloat = headOnRight ? 1 : -1
+        let baseX = headOnRight ? spriteOrigin.x + spec.spriteWidth - 2 : spriteOrigin.x - 12
+        let baseY = spriteOrigin.y + spec.spriteHeight - 12
+        let zSmall = ["ooo", "..o", ".o.", "o..", "ooo"]
+        let zBig = ["oooo", "...o", "..o.", ".o..", "oooo"]
+        outlineColor.withAlphaComponent(0.7).setFill()
         for i in 0...phase {
-            let letter = i == 2 ? "Z" : "z"
-            let point = NSPoint(x: base.x + direction * CGFloat(i) * 9, y: base.y + CGFloat(i) * 11)
-            (letter as NSString).draw(at: point, withAttributes: attrs)
+            let glyph = i == 2 ? zBig : zSmall
+            let px: CGFloat = 2
+            let ox = baseX + direction * CGFloat(i) * 10
+            let oy = baseY + CGFloat(i) * 12
+            for (r, row) in glyph.enumerated() {
+                for (c, ch) in row.enumerated() where ch == "o" {
+                    NSRect(x: ox + CGFloat(c) * px, y: oy + CGFloat(glyph.count - 1 - r) * px, width: px, height: px).fill()
+                }
+            }
         }
     }
 
@@ -543,22 +551,160 @@ final class PetView: NSView {
     }
 }
 
+// MARK: - Editable lines
+
+enum LineStore {
+    static func key(_ spec: PetSpec) -> String { "lines." + spec.name }
+
+    static func lines(for spec: PetSpec) -> [String] {
+        let saved = UserDefaults.standard.stringArray(forKey: key(spec)) ?? []
+        return saved.isEmpty ? spec.clickLines : saved
+    }
+
+    static func save(_ lines: [String], for spec: PetSpec) {
+        UserDefaults.standard.set(lines, forKey: key(spec))
+    }
+
+    static func reset(_ spec: PetSpec) {
+        UserDefaults.standard.removeObject(forKey: key(spec))
+    }
+}
+
+// MARK: - Settings window
+
+final class SettingsController: NSObject {
+    let window: NSWindow
+    let picker = NSPopUpButton()
+    let textView = NSTextView()
+    let status = NSTextField(labelWithString: "")
+
+    override init() {
+        window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 420, height: 440),
+                          styleMask: [.titled, .closable], backing: .buffered, defer: false)
+        super.init()
+        window.title = "Mochi 设置"
+        window.isReleasedWhenClosed = false
+        window.center()
+
+        let content = NSView(frame: window.contentRect(forFrameRect: window.frame))
+        window.contentView = content
+
+        let label = NSTextField(labelWithString: "宠物：")
+        label.frame = NSRect(x: 20, y: 396, width: 50, height: 22)
+        content.addSubview(label)
+
+        picker.frame = NSRect(x: 70, y: 392, width: 200, height: 28)
+        picker.addItems(withTitles: allPetSpecs.map { $0.name })
+        picker.target = self
+        picker.action = #selector(petChanged)
+        content.addSubview(picker)
+
+        let hint = NSTextField(labelWithString: "点它时说的话，一行一句：")
+        hint.frame = NSRect(x: 20, y: 364, width: 380, height: 20)
+        hint.textColor = .secondaryLabelColor
+        content.addSubview(hint)
+
+        let scroll = NSScrollView(frame: NSRect(x: 20, y: 70, width: 380, height: 288))
+        scroll.hasVerticalScroller = true
+        scroll.borderType = .bezelBorder
+        textView.frame = scroll.contentView.bounds
+        textView.autoresizingMask = [.width]
+        textView.font = NSFont.systemFont(ofSize: 14)
+        textView.isRichText = false
+        textView.textContainerInset = NSSize(width: 6, height: 6)
+        scroll.documentView = textView
+        content.addSubview(scroll)
+
+        let save = NSButton(title: "保存", target: self, action: #selector(saveLines))
+        save.frame = NSRect(x: 300, y: 24, width: 100, height: 32)
+        save.keyEquivalent = "\r"
+        content.addSubview(save)
+
+        let reset = NSButton(title: "恢复默认", target: self, action: #selector(resetLines))
+        reset.frame = NSRect(x: 190, y: 24, width: 100, height: 32)
+        content.addSubview(reset)
+
+        status.frame = NSRect(x: 20, y: 30, width: 160, height: 20)
+        status.textColor = .secondaryLabelColor
+        content.addSubview(status)
+
+        loadLines()
+    }
+
+    var currentSpec: PetSpec { allPetSpecs[max(picker.indexOfSelectedItem, 0)] }
+
+    func show() {
+        loadLines()
+        NSApp.activate(ignoringOtherApps: true)
+        window.makeKeyAndOrderFront(nil)
+    }
+
+    func loadLines() {
+        textView.string = LineStore.lines(for: currentSpec).joined(separator: "\n")
+        status.stringValue = ""
+    }
+
+    @objc func petChanged() { loadLines() }
+
+    @objc func saveLines() {
+        let lines = textView.string
+            .split(separator: "\n")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        LineStore.save(lines, for: currentSpec)
+        status.stringValue = "已保存 \(lines.count) 句"
+    }
+
+    @objc func resetLines() {
+        LineStore.reset(currentSpec)
+        loadLines()
+        status.stringValue = "已恢复默认"
+    }
+}
+
 // MARK: - App
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     var pets: [Pet] = []
+    var statusItem: NSStatusItem!
+    lazy var settings = SettingsController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let count = allPetSpecs.count
         for (index, spec) in allPetSpecs.enumerated() {
             let pet = Pet(spec: spec, isLeader: index == 0)
-            pet.onShowAll = { [weak self] in self?.pets.forEach { $0.comeBack() } }
+            pet.onShowAll = { [weak self] in self?.showAll() }
             pet.onQuit = { NSApp.terminate(nil) }
             let fraction = CGFloat(index + 1) / CGFloat(count + 1)
             pet.start(atFraction: fraction, greeting: index == 0 ? greetingForNow() : nil)
             pets.append(pet)
         }
+        setUpStatusItem()
     }
+
+    // Opening the app again (Spotlight, Finder) brings everyone back.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        showAll()
+        return false
+    }
+
+    func setUpStatusItem() {
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        statusItem.button?.image = NSImage(systemSymbolName: "pawprint.fill", accessibilityDescription: "Mochi")
+        let menu = NSMenu()
+        menu.addItem(withTitle: "叫大家回来", action: #selector(showAll), keyEquivalent: "").target = self
+        menu.addItem(withTitle: "全部藏起来", action: #selector(hideAll), keyEquivalent: "").target = self
+        menu.addItem(.separator())
+        menu.addItem(withTitle: "设置台词…", action: #selector(openSettings), keyEquivalent: ",").target = self
+        menu.addItem(.separator())
+        menu.addItem(withTitle: "退出", action: #selector(quit), keyEquivalent: "q").target = self
+        statusItem.menu = menu
+    }
+
+    @objc func showAll() { pets.forEach { $0.comeBack() } }
+    @objc func hideAll() { pets.forEach { $0.window.orderOut(nil) } }
+    @objc func openSettings() { settings.show() }
+    @objc func quit() { NSApp.terminate(nil) }
 }
 
 let app = NSApplication.shared
