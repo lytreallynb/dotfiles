@@ -14,11 +14,14 @@ My macOS development environment, captured so I can rebuild a machine from scrat
 | Terminal         | [Ghostty](https://ghostty.org/) + [Kitty](https://sw.kovidgoyal.net/kitty/) | `config/ghostty/`, `config/kitty/` |
 | Shell            | zsh                        | `home/.zshrc`              |
 | Multiplexer      | tmux                       | `home/.tmux.conf`          |
+| Desktop pets     | Mochi + cats (Swift/AppKit) | `apps/desktop-pet/`        |
 
 ## Layout
 
 ```
 dotfiles/
+├── apps/
+│   └── desktop-pet/      # Pixel desktop pets, built by install.sh
 ├── Brewfile              # All Homebrew formulae and casks
 ├── config/               # → mirrors ~/.config/
 │   ├── aerospace/
@@ -55,6 +58,7 @@ cd ~/dotfiles
 5. Build SbarLua and the SketchyBar helper binaries
 6. Patch SF Pro fonts into `~/Library/Fonts/` from the installed brew cask (no sudo)
 7. Start `borders` and `sketchybar` services and launch `AeroSpace`
+8. Build the desktop pets into `~/Applications/Mochi.app`
 
 ## Manual steps after install.sh
 

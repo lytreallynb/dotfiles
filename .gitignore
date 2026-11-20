@@ -16,3 +16,6 @@ config/github-copilot/
 config/gcloud/
 *.local
 secrets/
+
+# Desktop pet build output (rebuilt by install.sh)
+apps/desktop-pet/Mochi.app/
