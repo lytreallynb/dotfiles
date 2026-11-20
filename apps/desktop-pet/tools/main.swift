@@ -3,6 +3,34 @@
 
 import AppKit
 
+// Icon mode: ./preview --icon out.png renders a 1024px app icon of Mochi.
+if CommandLine.arguments.count > 2 && CommandLine.arguments[1] == "--icon" {
+    let size: CGFloat = 1024
+    let image = NSImage(size: NSSize(width: size, height: size))
+    image.lockFocus()
+    let inset: CGFloat = 100
+    let bg = NSBezierPath(roundedRect: NSRect(x: inset, y: inset, width: size - 2 * inset, height: size - 2 * inset),
+                          xRadius: 185, yRadius: 185)
+    rgb(255, 214, 165).setFill()
+    bg.fill()
+    let spec = mochiSpec
+    let rows = spec.frame(.happy)
+    let px: CGFloat = 40
+    let ox = (size - CGFloat(spec.cols) * px) / 2
+    let oy = (size - CGFloat(spec.rows) * px) / 2
+    for (r, row) in rows.enumerated() {
+        for (c, ch) in row.enumerated() {
+            guard let color = spec.colors[ch] else { continue }
+            color.setFill()
+            NSRect(x: ox + CGFloat(c) * px, y: oy + CGFloat(rows.count - 1 - r) * px, width: px, height: px).fill()
+        }
+    }
+    image.unlockFocus()
+    let rep = NSBitmapImageRep(data: image.tiffRepresentation!)!
+    try! rep.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: CommandLine.arguments[2]))
+    exit(0)
+}
+
 let scale: CGFloat = 8
 let gap: CGFloat = 16
 let poses = Pose.allCases

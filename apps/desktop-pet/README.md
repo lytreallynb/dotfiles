@@ -12,12 +12,16 @@ Plain AppKit, no dependencies.
 ## Build and run
 
 ```bash
-./build.sh                         # builds Mochi.app here
-cp -R Mochi.app ~/Applications/    # optional
-open Mochi.app
+./build.sh    # builds with icon, installs to ~/Applications/Mochi.app (single copy)
 ```
 
-`install.sh` at the repo root does this automatically and installs to `~/Applications/`.
+Then open it from Spotlight (search "Mochi").
+
+## Shortcuts
+
+- `⌥⇧M`: show / hide all pets
+- `⌥⇧,`: open settings (edit each pet's lines)
+- Paw icon in the macOS menu bar has the same actions.
 
 ## Controls
 

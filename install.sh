@@ -105,13 +105,7 @@ open -a AeroSpace || true
 # 8. Desktop pets (Mochi + cats)
 # ----------------------------------------------------------------------
 echo "==> Building desktop pets"
-if (cd "$DOTFILES/apps/desktop-pet" && ./build.sh); then
-  mkdir -p "$HOME/Applications"
-  rm -rf "$HOME/Applications/Mochi.app"
-  cp -R "$DOTFILES/apps/desktop-pet/Mochi.app" "$HOME/Applications/"
-  codesign --force --sign - "$HOME/Applications/Mochi.app" >/dev/null 2>&1 || true
-  echo "  installed ~/Applications/Mochi.app"
-else
+if ! (cd "$DOTFILES/apps/desktop-pet" && ./build.sh); then
   echo "  desktop pet build failed (needs Xcode CLI tools); skipping"
 fi
 

@@ -4,6 +4,7 @@
 // Sprite data and per-pet settings live in Sprites.swift.
 
 import AppKit
+import Carbon
 
 let groundPadding: CGFloat = 4
 let bubbleAreaHeight: CGFloat = 90
@@ -579,7 +580,7 @@ final class SettingsController: NSObject {
     let status = NSTextField(labelWithString: "")
 
     override init() {
-        window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 420, height: 440),
+        window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 420, height: 540),
                           styleMask: [.titled, .closable], backing: .buffered, defer: false)
         super.init()
         window.title = "Mochi 设置"
@@ -588,6 +589,18 @@ final class SettingsController: NSObject {
 
         let content = NSView(frame: window.contentRect(forFrameRect: window.frame))
         window.contentView = content
+
+        let help = NSTextField(wrappingLabelWithString:
+            "快捷键（任何地方都能用）\n⌥⇧M  显示 / 藏起所有宠物\n⌥⇧,  打开这个设置窗口\n\nSpotlight 搜 Mochi 也能打开这里。")
+        help.frame = NSRect(x: 20, y: 440, width: 280, height: 86)
+        content.addSubview(help)
+
+        let toggle = NSButton(title: "显示 / 藏起来", target: self, action: #selector(togglePets))
+        toggle.frame = NSRect(x: 290, y: 490, width: 116, height: 32)
+        content.addSubview(toggle)
+        let quit = NSButton(title: "退出 Mochi", target: NSApp, action: #selector(NSApplication.terminate(_:)))
+        quit.frame = NSRect(x: 290, y: 456, width: 116, height: 32)
+        content.addSubview(quit)
 
         let label = NSTextField(labelWithString: "宠物：")
         label.frame = NSRect(x: 20, y: 396, width: 50, height: 22)
@@ -644,6 +657,8 @@ final class SettingsController: NSObject {
         status.stringValue = ""
     }
 
+    var onToggle: (() -> Void)?
+    @objc func togglePets() { onToggle?() }
     @objc func petChanged() { loadLines() }
 
     @objc func saveLines() {
@@ -660,6 +675,31 @@ final class SettingsController: NSObject {
         loadLines()
         status.stringValue = "已恢复默认"
     }
+}
+
+// MARK: - Global hotkeys (Carbon is still the simplest API for this)
+
+var hotKeyActions: [UInt32: () -> Void] = [:]
+var hotKeyRefs: [EventHotKeyRef?] = []
+
+func installHotKeyHandler() {
+    var eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
+    InstallEventHandler(GetApplicationEventTarget(), { _, event, _ in
+        var hotKeyID = EventHotKeyID()
+        GetEventParameter(event, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID),
+                          nil, MemoryLayout<EventHotKeyID>.size, nil, &hotKeyID)
+        let action = hotKeyActions[hotKeyID.id]
+        DispatchQueue.main.async { action?() }
+        return noErr
+    }, 1, &eventType, nil, nil)
+}
+
+func registerHotKey(id: UInt32, keyCode: Int, action: @escaping () -> Void) {
+    hotKeyActions[id] = action
+    var ref: EventHotKeyRef?
+    let hotKeyID = EventHotKeyID(signature: OSType(0x4D4F4348), id: id)  // "MOCH"
+    RegisterEventHotKey(UInt32(keyCode), UInt32(optionKey | shiftKey), hotKeyID, GetApplicationEventTarget(), 0, &ref)
+    hotKeyRefs.append(ref)
 }
 
 // MARK: - App
@@ -680,11 +720,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             pets.append(pet)
         }
         setUpStatusItem()
+        installHotKeyHandler()
+        registerHotKey(id: 1, keyCode: kVK_ANSI_M) { [weak self] in self?.toggleAll() }
+        registerHotKey(id: 2, keyCode: kVK_ANSI_Comma) { [weak self] in self?.openSettings() }
+        settings.onToggle = { [weak self] in self?.toggleAll() }
+        settings.show()
+    }
+
+    func toggleAll() {
+        if pets.contains(where: { $0.window.isVisible }) { hideAll() } else { showAll() }
     }
 
     // Opening the app again (Spotlight, Finder) brings everyone back.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         showAll()
+        settings.show()
         return false
     }
 
@@ -692,15 +742,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem.button?.image = NSImage(systemSymbolName: "pawprint.fill", accessibilityDescription: "Mochi")
         let menu = NSMenu()
-        menu.addItem(withTitle: "叫大家回来", action: #selector(showAll), keyEquivalent: "").target = self
-        menu.addItem(withTitle: "全部藏起来", action: #selector(hideAll), keyEquivalent: "").target = self
+        menu.addItem(withTitle: "显示 / 藏起来    ⌥⇧M", action: #selector(menuToggle), keyEquivalent: "").target = self
         menu.addItem(.separator())
-        menu.addItem(withTitle: "设置台词…", action: #selector(openSettings), keyEquivalent: ",").target = self
+        menu.addItem(withTitle: "设置…    ⌥⇧,", action: #selector(openSettings), keyEquivalent: "").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: "退出", action: #selector(quit), keyEquivalent: "q").target = self
         statusItem.menu = menu
     }
 
+    @objc func menuToggle() { toggleAll() }
     @objc func showAll() { pets.forEach { $0.comeBack() } }
     @objc func hideAll() { pets.forEach { $0.window.orderOut(nil) } }
     @objc func openSettings() { settings.show() }
